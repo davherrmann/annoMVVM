@@ -2,3 +2,5 @@ annoMVVM [![Build Status](https://travis-ci.org/davherrmann/annoMVVM.png?branch=
 ========
 
 MVVM framework for Java applications
+
+Author: David Herrmann
