@@ -1,8 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.7
 version = '1.0'
+group = 'de.davherrmann'
 jar {
     manifest {
         attributes 'Implementation-Title': 'MVVM library', 'Implementation-Version': version
@@ -21,9 +23,7 @@ dependencies {
 }
 
 uploadArchives {
-    repositories {
-       flatDir {
-           dirs 'repos'
-       }
+    repositories.mavenDeployer {
+       repository url: "file:///${projectDir}/../m2repo"
     }
 }
