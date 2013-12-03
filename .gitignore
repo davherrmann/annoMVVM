@@ -1,1 +1,5 @@
-/m2repo
+.gradle/
+/bin
+/build
+.project
+.settings
