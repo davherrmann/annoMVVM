@@ -19,6 +19,7 @@ import de.davherrmann.mvvm.annotations.ProvidesState;
 public class ViewModelComposer {
 	private Map<Class<?>, StateChangeWrapper> stateChangeWrappers = new HashMap<>();
 	private Map<Class<?>, ActionWrapper> actionWrappers = new HashMap<>();
+	private Map<Class<?>, SourceWrapper<?>> sourceWrappers = new HashMap<>();
 	private Map<Object, Boolean> circularActionStateUpdatingFields = new WeakHashMap<>();
 
 	public StateChangeWrapper addStateChangeWrapper(Class<?> boundObjectType,
@@ -29,6 +30,11 @@ public class ViewModelComposer {
 	public ActionWrapper addActionWrapper(Class<?> boundObjectType,
 			ActionWrapper actionWrapper) {
 		return actionWrappers.put(boundObjectType, actionWrapper);
+	}
+	
+	public SourceWrapper<?> addSourceWrapper(Class<?> sourceType,
+			SourceWrapper<?> sourceWrapper) {
+		return sourceWrappers.put(sourceType, sourceWrapper);
 	}
 
 	public void bind(Object view, Object... viewModels)
@@ -142,6 +148,7 @@ public class ViewModelComposer {
 
 	public void bindActionHandler(final Object fieldInstance,
 			Class<? extends ActionHandler> actionHandlerType,
+			Object[] sources,
 			Object... viewModels) throws IllegalAccessException,
 			UnsupportedOperationException {
 
@@ -152,12 +159,13 @@ public class ViewModelComposer {
 				break;
 			}
 		}
-		bindActionHandler(fieldInstance, actionHandlerType, actionWrapper,
+		bindActionHandler(fieldInstance, actionHandlerType, sources, actionWrapper,
 				viewModels);
 	}
 
 	public void bindActionHandler(final Object fieldInstance,
 			final Class<? extends ActionHandler> actionHandlerType,
+			final Object[] sources,
 			ActionWrapper actionWrapper, Object... viewModels)
 			throws IllegalAccessException, UnsupportedOperationException {
 
@@ -200,6 +208,29 @@ public class ViewModelComposer {
 						.containsKey(fieldInstance)) {
 					circularActionStateUpdatingFields.put(fieldInstance, true);
 				}
+				
+				Object[] sourceData = new Object[sources.length];
+				for (int i = 0; i < sources.length; i++) {
+					SourceWrapper<?> sourceWrapper = null;
+					for (Class<?> key : sourceWrappers.keySet()) {
+						if (key.isAssignableFrom(sources[i].getClass())) {
+							sourceWrapper = sourceWrappers.get(key);
+							break;
+						}
+					}
+					
+					if (sourceWrapper == null) {
+						throw new NoSuchElementException("No "
+								+ SourceWrapper.class.getSimpleName() + " for "
+								+ sources[i].getClass() + " found.");
+					}
+					
+					sourceData[i] = sourceWrapper.get(sources[i]);
+				}
+				
+				System.out.println("sourceData");
+				System.out.println(sourceData);
+				
 				try {
 					actionHandlerTarget.invoke(viewModelTarget, actionData);
 				} catch (IllegalAccessException | IllegalArgumentException
@@ -233,8 +264,21 @@ public class ViewModelComposer {
 			}
 
 			final Object fieldInstance = field.get(view);
+			
+			String[] sourceNames = bindActionAnnotation.source();
+			Object[] sources = new Object[sourceNames.length];
+			
+			try {
+				for (int i = 0; i < bindActionAnnotation.source().length; i++) {
+					Field sourceField = view.getClass().getDeclaredField(sourceNames[i]);
+					sourceField.setAccessible(true);
+					sources[i] = sourceField.get(view);
+				}
+			} catch (NoSuchFieldException | SecurityException e) {
+				throw new UnsupportedOperationException(e.getMessage());
+			}
 
-			bindActionHandler(fieldInstance, bindActionAnnotation.value(),
+			bindActionHandler(fieldInstance, bindActionAnnotation.value(), sources,
 					viewModels);
 		}
 	}
