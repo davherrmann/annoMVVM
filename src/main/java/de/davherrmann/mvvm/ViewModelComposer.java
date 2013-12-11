@@ -232,7 +232,11 @@ public class ViewModelComposer {
 				System.out.println(sourceData);
 				
 				try {
-					actionHandlerTarget.invoke(viewModelTarget, actionData);
+					if (sourceData.length != 0) {
+						actionHandlerTarget.invoke(viewModelTarget, sourceData);
+					} else {
+						actionHandlerTarget.invoke(viewModelTarget, actionData);
+					}
 				} catch (IllegalAccessException | IllegalArgumentException
 						| InvocationTargetException | ClassCastException e) {
 					throw new UnsupportedOperationException("Invoking "
