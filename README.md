@@ -95,11 +95,11 @@ When no source fields are defined in the ```@BindAction``` annotation, an ```Act
 Annotations can be used for either passing events in the view to the viewmodel or synchronising a state in the viewmodel with the counterpart in the view.
 
 ###@BindAction
-For binding an action in a view to a method in a viewmodel, an ```ActionHandler``` has to be declared in the viewmodel:
+For binding an action in a view to a method in a viewmodel, an ```ActionHandler``` needs to be declared in the viewmodel:
 ```java
 public interface DoLogout extends ActionHandler {}
 ```
-The declared handler can then be used in a method annotation in the viewmodel:
+The declared handler can then be used in a ```@HandlesAction``` annotation on a method in the viewmodel:
 ```java
 @HandlesAction(DoLogin.class)
 public void doLogin(String username, String password) {
@@ -114,6 +114,37 @@ private PasswordField password = new PasswordField("Password:");
 @BindAction(value = DoLogin.class, source = { "user", "password" })
 private Button loginButton;
 ```
-Make sure the fields in the view are initialised properly - otherwise you might get a ```NullPointerException``` when binding the view to the viewmodel
+Make sure the fields in the view are initialised properly - otherwise you might get a ```NullPointerException``` when binding the view to the viewmodel.
+
+###@BindState
+For binding a state in a viewmodel to a synchronised field in a view, a ```State``` needs to be declared in the viewmodel:
+```java
+public interface IsLoggedIn extends State<Boolean> {}
+public interface UserInformation extends State<String> {}
+```
+
+The declared state can then be used in a ```@ProvidesState``` annotation on a ```State``` field in the viewmodel:
+```java
+@ProvidesState(IsLoggedIn.class)
+public final BasicState<Boolean> isLoggedIn = new BasicState<Boolean>(Boolean.class);
+
+@ProvidesState(UserInformation.class)
+public final BasicState<String> userInformation = new BasicState<String>(String.class);
+```
+
+Now a field in the view can be synchronised with the ```State```:
+```java
+@BindState(IsLoggedIn.class)
+private BasicState<Boolean> isLoggedIn = new BasicState<Boolean>(Boolean.class);
+
+@BindState(UserInformation.class)
+private Label labelUserInformation = new Label();
+```
+
+When a ```State``` is changed in the viewmodel, it now automatically synchronises with the bound fields in the views:
+```java
+isLoggedIn.set(false);
+userInformation.set("User: abc");
+```
 
 Author: David Herrmann, 2013
