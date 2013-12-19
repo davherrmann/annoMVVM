@@ -95,9 +95,25 @@ When no source fields are defined in the ```@BindAction``` annotation, an ```Act
 Annotations can be used for either passing events in the view to the viewmodel or synchronising a state in the viewmodel with the counterpart in the view.
 
 ###@BindAction
-For binding an action in a view to a method in a viewmodel, an ActionHandler has to be declared in the viewmodel:
-``` 
-  public interface DoLogout extends ActionHandler {}
+For binding an action in a view to a method in a viewmodel, an ```ActionHandler``` has to be declared in the viewmodel:
+```java
+public interface DoLogout extends ActionHandler {}
 ```
+The declared handler can then be used in a method annotation in the viewmodel:
+```java
+@HandlesAction(DoLogin.class)
+public void doLogin(String username, String password) {
+	//do something with username and password
+}
+```
+Now the method can be bound in the view:
+```java
+private TextField user = new TextField("User:");
+private PasswordField password = new PasswordField("Password:");
+
+@BindAction(value = DoLogin.class, source = { "user", "password" })
+private Button loginButton;
+```
+Make sure the fields in the view are initialised properly - otherwise you might get a ```NullPointerException``` when binding the view to the viewmodel
 
 Author: David Herrmann, 2013
