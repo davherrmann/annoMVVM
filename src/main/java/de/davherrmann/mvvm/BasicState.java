@@ -8,8 +8,9 @@ public class BasicState<StateType> implements State<StateType> {
 	private Class<StateType> stateType;
 	private Collection<StateChangeListener> listeners = new ArrayList<StateChangeListener>();
 
-	public BasicState(Class<StateType> stateType) {
-		this.stateType = stateType;
+	@SuppressWarnings("unchecked")
+	public BasicState(Class<? super StateType> stateType) {
+		this.stateType = (Class<StateType>) stateType;
 	}
 
 	@Override
