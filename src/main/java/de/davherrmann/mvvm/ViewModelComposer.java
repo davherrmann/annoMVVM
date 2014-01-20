@@ -228,9 +228,6 @@ public class ViewModelComposer {
 					sourceData[i] = sourceWrapper.get(sources[i]);
 				}
 				
-				System.out.println("sourceData");
-				System.out.println(sourceData);
-				
 				try {
 					if (sourceData.length != 0) {
 						actionHandlerTarget.invoke(viewModelTarget, sourceData);
